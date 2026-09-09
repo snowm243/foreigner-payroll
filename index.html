@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>上海工资计算器 Shanghai Salary Calculator</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:#f0f4f8;color:#2d3748;font-size:14px}
+  h1{font-size:18px;font-weight:700;color:#2b6cb0;margin-bottom:4px}
+  .sub{color:#718096;font-size:12px}
+  .sub .en{color:#a0aec0;font-size:11px;display:block;margin-top:2px}
+  .header{background:#fff;padding:16px 20px;border-bottom:2px solid #bee3f8;margin-bottom:16px}
+  .container{max-width:900px;margin:0 auto;padding:0 12px 32px}
+  .card{background:#fff;border-radius:10px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+  .card-title{font-weight:700;color:#2b6cb0;margin-bottom:12px;font-size:13px;letter-spacing:.3px}
+  .card-title .en{color:#90cdf4;font-weight:600;font-size:11px;text-transform:none;margin-left:6px}
+  .row{display:flex;flex-wrap:wrap;gap:12px}
+  .field{display:flex;flex-direction:column;gap:4px;flex:1;min-width:160px}
+  label{font-size:12px;color:#718096;font-weight:600}
+  label .en{color:#a0aec0;font-weight:500;font-size:11px}
+  input[type=number],input[type=text]{border:1.5px solid #e2e8f0;border-radius:6px;padding:7px 10px;font-size:14px;color:#2d3748;width:100%;transition:border .2s}
+  input:focus{outline:none;border-color:#63b3ed}
+  .checkbox-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+  .check-item{display:flex;align-items:center;gap:8px;background:#f7fafc;border-radius:6px;padding:8px 10px}
+  .check-item input[type=checkbox]{width:15px;height:15px;accent-color:#3182ce;cursor:pointer;flex-shrink:0}
+  .check-item label{font-size:13px;color:#4a5568;cursor:pointer;flex:1;margin:0}
+  .check-item input[type=number]{width:80px;flex-shrink:0;font-size:13px;padding:4px 6px}
+  .check-item.foreigner label{color:#e53e3e;font-weight:700}
+  .check-item.foreigner label .en{color:#fc8181;font-weight:600}
+  .summary{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .sum-box{background:#ebf8ff;border-radius:8px;padding:12px;text-align:center}
+  .sum-box.green{background:#f0fff4}
+  .sum-box.orange{background:#fffaf0}
+  .sum-label{font-size:11px;color:#718096;margin-bottom:4px}
+  .sum-label .en{display:block;color:#a0aec0;font-size:10px;margin-top:1px}
+  .sum-val{font-size:16px;font-weight:700;color:#2b6cb0}
+  .sum-box.green .sum-val{color:#276749}
+  .sum-box.orange .sum-val{color:#c05621}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;min-width:640px}
+  th{background:#ebf8ff;color:#2b6cb0;font-weight:700;font-size:12px;padding:8px 10px;text-align:right;white-space:nowrap}
+  th:first-child{text-align:center}
+  th .en{display:block;font-size:10px;color:#90cdf4;font-weight:600}
+  td{padding:7px 10px;text-align:right;font-size:13px;border-bottom:1px solid #f0f4f8;white-space:nowrap}
+  td:first-child{text-align:center;font-weight:700;color:#4a5568}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:#f7fafc}
+  .highlight td{background:#f0fff4!important;font-weight:700;color:#276749}
+  .tip{font-size:11px;color:#a0aec0;margin-top:8px;line-height:1.6}
+  @media(max-width:500px){
+    .field{min-width:100%}
+    .header{padding:12px}
+    h1{font-size:16px}
+  }
+  .tip{color:#526477;font-size:12px}.en,.sub .en,label .en,.sum-label .en,th .en,.card-title .en{color:#526477!important}
+  .home{display:inline-block;margin-bottom:10px}a{color:#24639e}button{padding:8px 12px;border:1px solid #bbcede;background:#edf5fc;border-radius:6px;cursor:pointer}input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{outline:3px solid #3182ce;outline-offset:2px}
+  .error{color:#9b2424;background:#fff0ef;line-height:1.7}input:invalid{border-color:#d44343}.check-item.foreigner label,.check-item.foreigner label .en{color:#e53e3e!important}.check-item input[type=number]{width:94px}.sum-val{overflow-wrap:anywhere}input:disabled{opacity:.55} .table-wrap:focus{outline:2px solid #3182ce}
+  @media(max-width:500px){.check-item.foreigner{max-width:100%;flex:1!important}.summary{grid-template-columns:repeat(2,minmax(0,1fr))}.sum-val{font-size:15px}.check-item label{min-width:0}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="container" style="padding:0 12px">
+    <a href="https://snowm243.github.io/" class="home">← 工具箱 / Toolbox</a><h1>🏙️ 上海工资计算器</h1>
+    <div class="sub">居民个人累计预扣 · 全年固定参数测算<span class="en">Resident Individual · 12-month Fixed-Parameter Estimate</span></div>
+  </div>
+</div>
+<div class="container">
+
+<!-- 基本配置 -->
+<div class="card">
+  <div class="card-title">基本配置<span class="en">Basic Settings</span></div>
+  <div class="row">
+    <div class="field">
+      <label for="salary">月税前工资（元）<span class="en">Monthly Gross Salary (RMB)</span></label>
+      <input type="number" id="salary" placeholder="如 20000" min="0">
+    </div>
+    <div class="field">
+      <label for="avgSalary">社保参考平均工资（元）<span class="en">Reference Average Wage (RMB)</span></label>
+      <input type="number" id="avgSalary" placeholder="12577">
+    </div>
+    <div class="field">
+      <label for="baseOverride">社保基数（元）<span class="en">Social Insurance Base (RMB)</span></label>
+      <input type="number" id="baseOverride" placeholder="自动计算">
+    </div>
+    <div class="field">
+      <label for="fundAmount">公积金个人月缴额（元）<span class="en">Monthly Employee Housing Fund (RMB)</span></label>
+      <input type="number" id="fundAmount" placeholder="不缴填 0" min="0" step="0.01" value="0">
+    </div>
+  </div>
+  <div class="row" style="margin-top:12px;align-items:flex-end">
+    <div class="field" style="flex:0 0 auto;min-width:200px;max-width:240px">
+      <label for="bonus">年终奖（元）<span class="en">Annual Bonus (RMB)</span></label>
+      <input type="number" id="bonus" placeholder="如无可留空" min="0">
+    </div>
+    <div class="check-item foreigner" style="flex:0 0 auto;margin-bottom:4px">
+      <input type="checkbox" id="foreigner"> <label for="foreigner">不计社保<span class="en">Exclude Social Insurance</span></label>
+    </div>
+  </div>
+  <div class="tip">
+    社保基数留空自动计算，手动填写可覆盖；公积金填写个人月缴额，不缴填 0。<br>
+    Leave the insurance base blank for auto calculation; enter the monthly housing fund amount, or 0 if none.
+  </div>
+</div>
+
+<div id="errors" class="card error" role="alert" hidden></div>
+<!-- 专项附加扣除 -->
+<div class="card">
+  <div class="card-title">专项附加扣除（月）<span class="en">Special Additional Deductions (Monthly)</span></div>
+  <div class="checkbox-grid">
+    <div class="check-item">
+      <input type="checkbox" id="c1"> <label for="c1">子女教育<span class="en" style="display:block;color:#a0aec0">Children's Education</span></label>
+      <input type="number" id="v1" aria-label="扣除项目 1 每月金额 Monthly amount" value="2000" min="0">
+    </div>
+    <div class="check-item">
+      <input type="checkbox" id="c2"> <label for="c2">继续教育<span class="en" style="display:block;color:#a0aec0">Continuing Education</span></label>
+      <input type="number" id="v2" aria-label="扣除项目 2 每月金额 Monthly amount" value="400" min="0">
+    </div>
+
+    <div class="check-item">
+      <input type="checkbox" id="c4"> <label for="c4">住房贷款利息<span class="en" style="display:block;color:#a0aec0">Mortgage Interest</span></label>
+      <input type="number" id="v4" aria-label="扣除项目 4 每月金额 Monthly amount" value="1000" min="0">
+    </div>
+    <div class="check-item">
+      <input type="checkbox" id="c5"> <label for="c5">住房租金（沪）<span class="en" style="display:block;color:#a0aec0">Housing Rent (Shanghai)</span></label>
+      <input type="number" id="v5" aria-label="扣除项目 5 每月金额 Monthly amount" value="1500" min="0">
+    </div>
+    <div class="check-item">
+      <input type="checkbox" id="c6"> <label for="c6">赡养老人<span class="en" style="display:block;color:#a0aec0">Elderly Care</span></label>
+      <input type="number" id="v6" aria-label="扣除项目 6 每月金额 Monthly amount" value="3000" min="0">
+    </div>
+    <div class="check-item">
+      <input type="checkbox" id="c7"> <label for="c7">3岁以下婴幼儿照护<span class="en" style="display:block;color:#a0aec0">Infant Care (Under 3)</span></label>
+      <input type="number" id="v7" aria-label="扣除项目 7 每月金额 Monthly amount" value="2000" min="0">
+    </div>
+    <div class="check-item">
+      <input type="checkbox" id="c8"> <label for="c8">外籍免税津补贴（月）<span class="en" style="display:block;color:#a0aec0">Eligible Expat Tax-exempt Benefits</span></label>
+      <input type="number" id="v8" aria-label="扣除项目 8 每月金额 Monthly amount" value="0" min="0">
+    </div>
+  </div>
+</div>
+
+<!-- 月度明细 -->
+<div class="card">
+  <div class="card-title">月度明细<span class="en">Monthly Breakdown</span></div>
+  <div style="margin-bottom:12px">
+    <label for="monthSelect" style="font-size:12px;color:#718096;font-weight:600;display:block;margin-bottom:4px">选择月份 <span style="color:#a0aec0;font-weight:500">Select Month</span></label>
+    <select id="monthSelect" style="border:1.5px solid #e2e8f0;border-radius:6px;padding:7px 10px;font-size:14px;color:#2d3748;width:100%;max-width:200px;background:#fff">
+      <option value="all">全部月份 All Months</option>
+    </select>
+  </div>
+  <div class="table-wrap" tabindex="0" role="region" aria-label="月度工资明细 Monthly salary breakdown">
+    <table id="detailTable">
+      <thead>
+        <tr>
+          <th>月份<span class="en">Month</span></th>
+          <th>税前工资<span class="en">Gross</span></th>
+          <th>社保<span class="en">Social Ins.</span></th>
+          <th>公积金<span class="en">Hsg. Fund</span></th>
+          <th>专项附加<span class="en">Deductions</span></th>
+          <th>应纳税所得<span class="en">Taxable Inc.</span></th>
+          <th>个税<span class="en">Tax</span></th>
+          <th>税后工资<span class="en">Net</span></th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 年终奖明细 -->
+<div class="card">
+  <div class="card-title">年终奖明细<span class="en">Annual Bonus Breakdown</span></div>
+  <div class="summary" id="bonusSummary"></div>
+  <div class="tip">
+    年终奖 ÷ 12 查月度税率表 → 税额 = 年终奖 × 税率 − 速算扣除数（速算扣除数不乘 12）。此政策已延续至 2027 年底。<br>
+    <span style="color:#cbd5e0">Bonus ÷ 12 looks up the monthly bracket → Tax = Bonus × Rate − Quick Deduction (not multiplied by 12). Policy extended through end of 2027.</span>
+  </div>
+</div>
+
+<!-- 年度汇总 -->
+<div class="card">
+  <div class="card-title">年度汇总<span class="en">Annual Summary</span></div>
+  <div class="summary" id="summary" aria-live="polite"></div>
+</div>
+
+<div class="card"><label><input type="checkbox" id="remember"> 在此浏览器记住输入 / Remember inputs on this browser</label> <button id="clearData" type="button">清除输入 / Clear inputs</button><p id="storageStatus" class="tip" role="status">默认不保存。计算在本地完成。Inputs are not saved by default; calculations run locally.</p></div>
+</div>
+<script>
+// 累计预扣税率表（全年累计应纳税所得额）
+const TAX_BRACKETS=[
+  [36000,.03,0],
+  [144000,.1,2520],
+  [300000,.2,16920],
+  [420000,.25,31920],
+  [660000,.3,52920],
+  [960000,.35,85920],
+  [Infinity,.45,181920]
+];
+
+// 年终奖单独计税税率表（年终奖 ÷ 12 后查表，速算扣除数为月度值）
+const BONUS_BRACKETS=[
+  [3000,.03,0],
+  [12000,.1,210],
+  [25000,.2,1410],
+  [35000,.25,2660],
+  [55000,.3,4410],
+  [80000,.35,7160],
+  [Infinity,.45,15160]
+];
+
+function calcTax(taxableIncome){
+  taxableIncome=Math.max(0,taxableIncome);
+  for(let [limit,rate,deduct] of TAX_BRACKETS){
+    if(taxableIncome<=limit) return taxableIncome*rate-deduct;
+  }
+  return 0;
+}
+
+function calcBonus(bonus){
+  if(!bonus||bonus<=0) return {tax:0,rate:0,net:0};
+  const m=bonus/12;
+  for(let [limit,rate,deduct] of BONUS_BRACKETS){
+    if(m<=limit){
+      const tax=round(bonus*rate-deduct);
+      return {tax,rate,net:bonus-tax};
+    }
+  }
+  return {tax:0,rate:0,net:0};
+}
+
+const ids=['salary','avgSalary','baseOverride','fundAmount','bonus'];
+const cids=[1,2,4,5,6,7,8];
+const STORAGE_KEY="foreigner-payroll:v2";
+const round=n=>Math.round((n+Number.EPSILON)*100)/100;
+
+function save(){
+  if(!document.getElementById("remember").checked) return;
+  const d={};
+  ids.forEach(i=>d[i]=document.getElementById(i).value);
+  cids.forEach(i=>{
+    d['c'+i]=document.getElementById('c'+i).checked;
+    d['v'+i]=document.getElementById('v'+i).value;
+  });
+  d['foreigner']=document.getElementById('foreigner').checked;
+  try{localStorage.setItem(STORAGE_KEY,JSON.stringify(d)); document.getElementById('storageStatus').textContent='已保存在此浏览器 / Saved on this browser';}catch(e){document.getElementById('storageStatus').textContent='无法保存；计算仍可使用 / Storage unavailable';}
+}
+
+function load(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw) return;
+    const d=JSON.parse(raw);
+    if(!d || typeof d!=="object" || Array.isArray(d)) return;
+    document.getElementById("remember").checked=true;
+    ids.forEach(i=>{if(d[i]!==undefined)document.getElementById(i).value=d[i];});
+    cids.forEach(i=>{
+      if(d['c'+i]!==undefined)document.getElementById('c'+i).checked=d['c'+i];
+      if(d['v'+i]!==undefined)document.getElementById('v'+i).value=d['v'+i];
+    });
+    if(d['foreigner']!==undefined)document.getElementById('foreigner').checked=d['foreigner'];
+  }catch(e){}
+}
+
+function getSpecial(){
+  return cids.reduce((s,i)=>s+(document.getElementById('c'+i).checked?parseFloat(document.getElementById('v'+i).value||0):0),0);
+}
+
+function buildMonthSelect(){
+  const sel=document.getElementById('monthSelect');
+  const curMonth=new Date().getMonth()+1;
+  sel.innerHTML='<option value="all">全部月份 All Months</option>';
+  for(let m=1;m<=12;m++){
+    const o=document.createElement('option');
+    o.value=m; o.textContent=m+'月 Month '+m;
+    
+    sel.appendChild(o);
+  }
+  sel.addEventListener('change',calc);
+}
+
+function getShownMonths(){
+  const v=document.getElementById('monthSelect').value;
+  if(v==='all') return new Set([1,2,3,4,5,6,7,8,9,10,11,12]);
+  return new Set([parseInt(v)]);
+}
+
+function fmt(n){return n.toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2});}
+
+function calc(){
+  const el=id=>document.getElementById(id);
+  const benefitMode=el('c8').checked;
+  cids.forEach(i=>{el('v'+i).disabled=!el('c'+i).checked;});
+  const errors=[];
+  for(const input of document.querySelectorAll('input[type=number]')){
+    if(input.disabled) continue;
+    if(!input.checkValidity() || (input.value!=='' && !Number.isFinite(Number(input.value)))) errors.push('请输入有效的非负金额 / Enter valid non-negative amounts.');
+  }
+  const num=(id,fallback=0)=>el(id).value===''?fallback:Number(el(id).value);
+  const salary=num('salary'), avg=num('avgSalary',12577), bonus=num('bonus');
+  if(avg<=0) errors.push('参考平均工资须大于 0 / Reference wage must be positive.');
+  if(el('c4').checked && el('c5').checked) errors.push('住房租金与贷款利息不能同时扣除 / Choose rent or mortgage.');
+  if(benefitMode && cids.some(i=>i!==8 && el('c'+i).checked)) errors.push('免税津补贴与专项附加扣除不能同时使用 / Choose benefits or special deductions.');
+  if(benefitMode && num('v8')>salary) errors.push('免税津补贴不能超过已包含该津补贴的税前工资 / Benefits cannot exceed gross salary.');
+  if(errors.length){el('errors').textContent=[...new Set(errors)].join(' ');el('errors').hidden=false;el('tbody').innerHTML='';el('summary').textContent='请修正输入后查看结果 / Correct inputs to view results';el('bonusSummary').textContent='—';return;}
+  el('errors').hidden=true;
+  const autoBase=salary>0?Math.max(Math.min(salary,Math.round(avg*3)),Math.round(avg*.6)):0;
+  const base=el('baseOverride').value===''?autoBase:num('baseOverride');
+  el('baseOverride').placeholder='自动 / Auto: '+fmt(autoBase);
+  const si=el('foreigner').checked?0:round(base*.105);
+  const gjj=round(num('fundAmount'));
+  const special=getSpecial();
+
+  // Cumulative withholding
+  let cumTax=0;
+  const rows=[];
+
+  for(let m=1;m<=12;m++){
+    const cumIncome=salary*m;
+    const cumSI=(si+gjj)*m;
+    const cumDeduct=5000*m;
+    const cumSpecial=special*m;
+    const cumTaxable=Math.max(0,cumIncome-cumSI-cumDeduct-cumSpecial);
+    const cumTaxNow=round(Math.max(0,calcTax(cumTaxable)));
+    const monthTax=round(cumTaxNow-cumTax);
+    cumTax=cumTaxNow;
+    const netSalary=round(salary-si-gjj-monthTax);
+    const monthTaxable=Math.max(0,salary-si-gjj-5000-special);
+    rows.push({m,salary,si:fmt(si),gjj:fmt(gjj),special:fmt(special),taxable:fmt(monthTaxable),tax:fmt(monthTax),net:fmt(netSalary),_net:netSalary,_tax:monthTax});
+  }
+
+  // 年终奖单独计税
+  const b=calcBonus(bonus);
+  document.getElementById('bonusSummary').innerHTML=`
+    <div class="sum-box"><div class="sum-label">年终奖<span class="en">Bonus</span></div><div class="sum-val">¥${fmt(bonus)}</div></div>
+    <div class="sum-box orange"><div class="sum-label">适用税率<span class="en">Tax Rate</span></div><div class="sum-val">${bonus>0?(b.rate*100)+'%':'—'}</div></div>
+    <div class="sum-box orange"><div class="sum-label">年终奖个税<span class="en">Bonus Tax</span></div><div class="sum-val">¥${fmt(b.tax)}</div></div>
+    <div class="sum-box green"><div class="sum-label">税后到手<span class="en">Net Bonus</span></div><div class="sum-val">¥${fmt(b.net)}</div></div>
+  `;
+
+  // Summary（月度 + 年终奖 合并）
+  const totalNet=rows.reduce((s,r)=>s+r._net,0);
+  const totalTax=rows.reduce((s,r)=>s+r._tax,0);
+  document.getElementById('summary').innerHTML=`
+    <div class="sum-box"><div class="sum-label">年税前收入（含年终奖）<span class="en">Gross Annual (incl. Bonus)</span></div><div class="sum-val">¥${fmt(salary*12+bonus)}</div></div>
+    <div class="sum-box"><div class="sum-label">年社保（个人）<span class="en">Social Ins. (Annual)</span></div><div class="sum-val">¥${fmt(si*12)}</div></div>
+    <div class="sum-box"><div class="sum-label">年公积金（个人）<span class="en">Hsg. Fund (Annual)</span></div><div class="sum-val">¥${fmt(gjj*12)}</div></div>
+    <div class="sum-box orange"><div class="sum-label">年个税（含年终奖）<span class="en">Tax (incl. Bonus)</span></div><div class="sum-val">¥${fmt(totalTax+b.tax)}</div></div>
+    <div class="sum-box green"><div class="sum-label">年税后收入（含年终奖）<span class="en">Net Annual (incl. Bonus)</span></div><div class="sum-val">¥${fmt(totalNet+b.net)}</div></div>
+  `;
+
+  const shownMonths=getShownMonths();
+  const tbody=document.getElementById('tbody');
+  tbody.innerHTML='';
+  rows.forEach(r=>{
+    if(!shownMonths.has(r.m)) return;
+    const tr=document.createElement('tr');
+    if(r.m===12) tr.className='highlight';
+    tr.innerHTML=`<td>${r.m}月</td><td>${fmt(r.salary)}</td><td>${r.si}</td><td>${r.gjj}</td><td>${r.special}</td><td>${r.taxable}</td><td>${r.tax}</td><td>${r.net}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  save();
+}
+
+// Init and events
+document.querySelectorAll('input[type=number]').forEach(el=>{el.min='0';el.max='1000000000';el.step='0.01';});
+document.getElementById('avgSalary').value=12577;
+load();
+buildMonthSelect();
+calc();
+document.querySelectorAll('input').forEach(el=>el.addEventListener('input',()=>{
+  if(el.id==='remember' && !el.checked){try{localStorage.removeItem(STORAGE_KEY);}catch{}document.getElementById('storageStatus').textContent='已关闭保存 / Saving disabled';}
+  calc();
+}));
+document.getElementById('clearData').addEventListener('click',()=>{
+  try{localStorage.removeItem(STORAGE_KEY);}catch{}
+  document.querySelectorAll('input[type=checkbox]').forEach(el=>el.checked=false);
+  ids.forEach(id=>document.getElementById(id).value='');
+  document.getElementById('avgSalary').value=12577;
+  document.getElementById('fundAmount').value=0;
+  const defaults={1:2000,2:400,4:1000,5:1500,6:3000,7:2000,8:0};
+  cids.forEach(i=>document.getElementById('v'+i).value=defaults[i]);
+  document.getElementById('monthSelect').value='all';
+  document.getElementById('storageStatus').textContent='输入已清除 / Inputs cleared';
+  calc();
+});
+</script>
+</body>
+</html>
